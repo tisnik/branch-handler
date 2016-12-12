@@ -12,6 +12,38 @@
 (def verbose true)
 (def port 4000)
 
+(defn slurp-
+    [filename]
+    (try
+        (slurp filename)
+        (catch Exception e
+            (log/error e)
+            nil)))
+
+(defn read-request-body
+    "Read all informations from the request body."
+    [request]
+    (slurp- (:body request)))
+
+(defn log-request
+    [request]
+    (log/info "Handling request: " (:uri request) (:remote-addr request))
+    (if verbose
+        (clojure.pprint/pprint request)))
+
+(defn send-response
+    [response-text]
+    (-> (http-response/response response-text)
+        (http-response/content-type "text/html")))
+
+(defn http-request-handler
+    "Handler that is called by Ring for all requests received from user(s)."
+    [request]
+    (log-request request)
+    (if (= [:post "/"] [(:request-method request) (:uri request)])
+        (api-call-handler request))
+    (send-response ""))
+
 (def ring-app
     "Definition of a Ring-based application behaviour."
     (-> http-request-handler      ; handle all events
