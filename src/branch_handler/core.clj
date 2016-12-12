@@ -42,6 +42,19 @@
         (if body
             (json/read-str body :key-fn clojure.core/keyword))))
 
+(defn exec
+    "Execute external command and pass given number of parameters to it."
+    ; command called without parameters
+    ([command]
+     (doto (. (Runtime/getRuntime) exec command)
+           (.waitFor)
+           (.destroy)))
+    ; command called with one or more parameters
+    ([command & rest-parameters]
+     (doto (. (Runtime/getRuntime) exec (str command " " (clojure.string/join " " rest-parameters)))
+           (.waitFor)
+           (.destroy))))
+
 (defn clone-or-fetch-bare-repo
     [repository-url]
     (log/info "Cloning or fetching bare repository" repository-url)
