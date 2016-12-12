@@ -87,21 +87,30 @@
               (fetch-mirror-repo workdir group reponame repository-url)
               (clone-mirror-repo workdir group reponame repository-url))))
 
-(def actions (java.util.concurrent.LinkedBlockingQueue.))
+(defn create-action-queue
+    []
+    (java.util.concurrent.LinkedBlockingQueue.))
 
 (defn action-consumer
-    []
+    [actions-queue]
+    (while true
+        (when-let [action (.take actions-queue)] ; blocking operation
+            (log/info "Started action for repository" action)
+            (clone-or-fetch-mirror-repo action)
+            ; create-new-jenkins-jobs
+            ; start-new-jobs
+            (log/info "Finished action for repository" action)
+        )))
+
+(defn start-action-consumer
+    [actions-queue]
     (log/info "Starting actions consumer")
     (future                                    ; start consumer in its own thread
-        (while true
-            (when-let [action (.take actions)] ; blocking operation
-                (log/info "Got action for repository" action)
-                (clone-or-fetch-bare-repo action)
-            ))))
+        (action-consumer actions-queue)))
 
 (defn new-action
-    [action]
-    (.put actions action))
+    [actions-queue action]
+    (.put actions-queue action))
 
 (def empty-SHA "0000000000000000000000000000000000000000")
 
@@ -121,6 +130,8 @@
         (subs git-ref (inc (.lastIndexOf git-ref "/")))
         (catch Exception e
             nil)))
+
+(def actions-queue (create-action-queue))
 
 (defn api-call-handler
     [request]
@@ -142,7 +153,11 @@
         (log/info "after"      after)
         (log/info "operation"  operation)
         (if (contains? #{:branch-created :branch-deleted :branch-updated} operation)
-            (new-action repository-url))
+            (let [action {:action :clone-or-fetch-repository
+                          :name  repository-name
+                          :group repository-group
+                          :url   repository-url}]
+                 (new-action actions-queue action))) ; add new action into the queue that will serialize it
         ))
 
 (defn http-request-handler
@@ -168,6 +183,6 @@
     "Entry point to the branch handler service server."
     [& args]
     (log/info "Started app on port" port)
-    (action-consumer)
+    (start-action-consumer actions-queue)
     (start-server ring-app port))
 
