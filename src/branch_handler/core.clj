@@ -9,8 +9,9 @@
 (require '[clojure.tools.cli       :as cli])
 (require '[clojure.tools.logging   :as log])
 
-(def verbose true)
+(def verbose false)
 (def port 3000)
+(def workdir "work")
 
 (defn slurp-
     [filename]
@@ -55,10 +56,36 @@
            (.waitFor)
            (.destroy))))
 
-(defn clone-or-fetch-bare-repo
-    [repository-url]
-    (log/info "Cloning or fetching bare repository" repository-url)
-    )
+(defn repo-workdir
+    [workdir group reponame]
+    (clojure.string/join "/" [workdir group reponame]))
+
+(defn repodir-exists?
+    [workdir group reponame]
+    (let [f (new java.io.File (repo-workdir workdir group reponame))]
+        (.isDirectory f)))
+
+(defn fetch-mirror-repo
+    [workdir group reponame repository-url]
+    (log/info "Fetching mirror repository" repository-url)
+    ; TODO test --prune
+    (exec "git" "--git-dir" (repo-workdir workdir group reponame) "fetch"))
+
+(defn clone-mirror-repo
+    [workdir group reponame repository-url]
+    (log/info "Cloning mirror repository" repository-url)
+    (exec "git" "clone" "--mirror" repository-url (repo-workdir workdir group reponame)))
+
+(defn clone-or-fetch-mirror-repo
+    [action]
+    (log/info "Cloning or fetching repository")
+    (let [reponame       (:name action)
+          group          (:group action)
+          repository-url (:url action)]
+          (log/info (repo-workdir workdir group reponame))
+          (if (repodir-exists? workdir group reponame)
+              (fetch-mirror-repo workdir group reponame repository-url)
+              (clone-mirror-repo workdir group reponame repository-url))))
 
 (def actions (java.util.concurrent.LinkedBlockingQueue.))
 
