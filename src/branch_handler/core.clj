@@ -10,7 +10,7 @@
 (require '[clojure.tools.logging   :as log])
 
 (def verbose true)
-(def port 4000)
+(def port 3000)
 
 (defn slurp-
     [filename]
@@ -41,6 +41,27 @@
     (let [body (read-request-body request)]
         (if body
             (json/read-str body :key-fn clojure.core/keyword))))
+
+(defn clone-or-fetch-bare-repo
+    [repository-url]
+    (log/info "Cloning or fetching bare repository" repository-url)
+    )
+
+(def actions (java.util.concurrent.LinkedBlockingQueue.))
+
+(defn action-consumer
+    []
+    (log/info "Starting actions consumer")
+    (future                                    ; start consumer in its own thread
+        (while true
+            (when-let [action (.take actions)] ; blocking operation
+                (log/info "Got action for repository" action)
+                (clone-or-fetch-bare-repo action)
+            ))))
+
+(defn new-action
+    [action]
+    (.put actions action))
 
 (def empty-SHA "0000000000000000000000000000000000000000")
 
@@ -80,9 +101,9 @@
         (log/info "before"     before)
         (log/info "after"      after)
         (log/info "operation"  operation)
+        (if (contains? #{:branch-created :branch-deleted :branch-updated} operation)
+            (new-action repository-url))
         ))
-
-        
 
 (defn http-request-handler
     "Handler that is called by Ring for all requests received from user(s)."
@@ -106,6 +127,7 @@
 (defn -main
     "Entry point to the branch handler service server."
     [& args]
-    (log/info "started app on port" port)
+    (log/info "Started app on port" port)
+    (action-consumer)
     (start-server ring-app port))
 
