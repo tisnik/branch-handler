@@ -74,7 +74,7 @@
 (defn clone-mirror-repo
     [workdir group reponame repository-url]
     (log/info "Cloning mirror repository" repository-url)
-    (exec "git" "clone" "--mirror" repository-url (repo-workdir workdir group reponame)))
+    (clojure.java.shell/sh "git" "clone" "--mirror" repository-url (repo-workdir workdir group reponame)))
 
 (defn read-branch-list-from-repo
     [workdir group reponame]
