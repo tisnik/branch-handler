@@ -13,6 +13,8 @@
 (def port 3000)
 (def workdir "work")
 
+(def jenkins-url (System/getenv "JENKINS_URL"))
+
 (defn slurp-
     [filename]
     (try
@@ -87,6 +89,14 @@
               (fetch-mirror-repo workdir group reponame repository-url)
               (clone-mirror-repo workdir group reponame repository-url))))
 
+(defn start-jenkins-jobs
+    [action]
+)
+
+(defn create-or-delete-jenkins-job
+    [action]
+)
+
 (defn create-action-queue
     []
     (java.util.concurrent.LinkedBlockingQueue.))
@@ -97,6 +107,8 @@
         (when-let [action (.take actions-queue)] ; blocking operation
             (log/info "Started action for repository" action)
             (clone-or-fetch-mirror-repo action)
+            (create-or-delete-jenkins-job action)
+            (start-jenkins-jobs action)
             ; create-new-jenkins-jobs
             ; start-new-jobs
             (log/info "Finished action for repository" action)
@@ -135,7 +147,7 @@
 
 (defn api-call-handler
     [request]
-    (let [gitlab-info (parse-gitlab-info request)
+    (let [gitlab-info      (parse-gitlab-info request)
           repository-url   (-> gitlab-info :repository :url)
           repository-name  (-> gitlab-info :repository :name)
           repository-group (-> gitlab-info :project :namespace)
@@ -156,7 +168,8 @@
             (let [action {:action :clone-or-fetch-repository
                           :name  repository-name
                           :group repository-group
-                          :url   repository-url}]
+                          :url   repository-url
+                          :original-data gitlab-info}]
                  (new-action actions-queue action))) ; add new action into the queue that will serialize it
         ))
 
@@ -183,6 +196,7 @@
     "Entry point to the branch handler service server."
     [& args]
     (log/info "Started app on port" port)
+    (log/info "JENKINS_URL is set to" jenkins-url)
     (start-action-consumer actions-queue)
     (start-server ring-app port))
 
