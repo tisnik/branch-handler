@@ -69,7 +69,7 @@
     [workdir group reponame repository-url]
     (log/info "Fetching mirror repository" repository-url)
     ; TODO test --prune
-    (exec "git" "--git-dir" (repo-workdir workdir group reponame) "fetch"))
+    (clojure.java.shell/sh "git" "--git-dir" (repo-workdir workdir group reponame) "fetch"))
 
 (defn clone-mirror-repo
     [workdir group reponame repository-url]
