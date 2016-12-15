@@ -9,24 +9,18 @@
 (require '[clojure.tools.cli       :as cli])
 (require '[clojure.tools.logging   :as log])
 
+(require '[clj-fileutils.fileutils :as file-utils])
+
 (def verbose false)
 (def port 3000)
 (def workdir "work")
 
 (def jenkins-url (System/getenv "JENKINS_URL"))
 
-(defn slurp-
-    [filename]
-    (try
-        (slurp filename)
-        (catch Exception e
-            (log/error e)
-            nil)))
-
 (defn read-request-body
     "Read all informations from the request body."
     [request]
-    (slurp- (:body request)))
+    (file-utils/slurp- (:body request)))
 
 (defn log-request
     [request]
@@ -91,6 +85,9 @@
 
 (defn start-jenkins-jobs
     [action]
+    (let [original-data (:original-data action)]
+        (clojure.pprint/pprint original-data)
+        )
 )
 
 (defn create-or-delete-jenkins-job
