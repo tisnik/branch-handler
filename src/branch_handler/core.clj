@@ -76,6 +76,15 @@
     (log/info "Cloning mirror repository" repository-url)
     (exec "git" "clone" "--mirror" repository-url (repo-workdir workdir group reponame)))
 
+(defn read-branch-list-from-repo
+    [workdir group reponame]
+    (let [repodir (repo-workdir workdir group reponame)]
+        (log/info "Reading branches from repository" repodir)
+        (->> (clojure.java.shell/sh "git" "--git-dir" (repo-workdir workdir group reponame) "branch")
+             :out
+             clojure.string/split-lines
+             (map #(subs % 2)))))
+
 (defn clone-or-fetch-mirror-repo
     [action]
     (log/info "Cloning or fetching repository")
@@ -104,13 +113,14 @@
     (-> (jenkins-api/read-list-of-all-jobs jenkins-url job-list-command)
         (filter-branch-jobs branch-job-prefix)))
 
-(read-jobs-for-branches "http://10.34.3.139:8080" job-list-command branch-job-prefix)
-
 (defn create-or-delete-jenkins-job
     [jenkins-url job-list-command branch-job-prefix action]
     (log/info "Create-or-delete-jenkins-job")
-    (let [jobs-for-branches (read-jobs-for-branches jenkins-url job-list-command branch-job-prefix)]
-)
+    (let [reponame       (:name action)
+          group          (:group action)
+          jobs-for-branches (read-jobs-for-branches jenkins-url job-list-command branch-job-prefix)
+          branch-list-in-repo (read-branch-list-from-repo workdir group reponame)]
+          branch-list-in-repo))
 
 (defn create-action-queue
     []
