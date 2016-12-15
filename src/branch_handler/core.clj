@@ -10,10 +10,11 @@
 (require '[clojure.tools.logging   :as log])
 
 (require '[clj-fileutils.fileutils :as file-utils])
+(require '[clj-jenkins-api.jenkins-api :as jenkins-api])
 
 (def verbose false)
-(def port 3000)
-(def workdir "work")
+(def port    3000)
+(def workdir "/tmp/bare-repositories")
 
 (def jenkins-url (System/getenv "JENKINS_URL"))
 
@@ -189,11 +190,19 @@
     (log/info "Starting the server at the port: " port)
     (jetty/run-jetty ring-app {:port port}))
 
+(defn create-workdir
+    [workdir]
+    (let [directory (new java.io.File workdir)]
+        (when (not (.isDirectory directory))
+              (log/info "Creating work directory" (.getAbsolutePath directory))
+              (.mkdir directory))))
+
 (defn -main
     "Entry point to the branch handler service server."
     [& args]
     (log/info "Started app on port" port)
     (log/info "JENKINS_URL is set to" jenkins-url)
+    (create-workdir workdir)
     (start-action-consumer actions-queue)
     (start-server ring-app port))
 
