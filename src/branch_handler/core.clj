@@ -4,6 +4,8 @@
 (require '[ring.middleware.params  :as http-params])
 (require '[ring.util.response      :as http-response])
 
+(require '[clojure.string          :as string])
+(require '[clojure.java.shell      :as shell])
 (require '[clojure.data.json       :as json])
 
 (require '[clojure.tools.cli       :as cli])
@@ -43,22 +45,9 @@
         (if body
             (json/read-str body :key-fn clojure.core/keyword))))
 
-(defn exec
-    "Execute external command and pass given number of parameters to it."
-    ; command called without parameters
-    ([command]
-     (doto (. (Runtime/getRuntime) exec command)
-           (.waitFor)
-           (.destroy)))
-    ; command called with one or more parameters
-    ([command & rest-parameters]
-     (doto (. (Runtime/getRuntime) exec (str command " " (clojure.string/join " " rest-parameters)))
-           (.waitFor)
-           (.destroy))))
-
 (defn repo-workdir
     [workdir group reponame]
-    (clojure.string/join "/" [workdir group reponame]))
+    (string/join "/" [workdir group reponame]))
 
 (defn repodir-exists?
     [workdir group reponame]
@@ -69,20 +58,20 @@
     [workdir group reponame repository-url]
     (log/info "Fetching mirror repository" repository-url)
     ; TODO test --prune
-    (clojure.java.shell/sh "git" "--git-dir" (repo-workdir workdir group reponame) "fetch"))
+    (shell/sh "git" "--git-dir" (repo-workdir workdir group reponame) "fetch"))
 
 (defn clone-mirror-repo
     [workdir group reponame repository-url]
     (log/info "Cloning mirror repository" repository-url)
-    (clojure.java.shell/sh "git" "clone" "--mirror" repository-url (repo-workdir workdir group reponame)))
+    (shell/sh "git" "clone" "--mirror" repository-url (repo-workdir workdir group reponame)))
 
 (defn read-branch-list-from-repo
     [workdir group reponame]
     (let [repodir (repo-workdir workdir group reponame)]
         (log/info "Reading branches from repository" repodir)
-        (->> (clojure.java.shell/sh "git" "--git-dir" (repo-workdir workdir group reponame) "branch")
+        (->> (shell/sh "git" "--git-dir" (repo-workdir workdir group reponame) "branch")
              :out
-             clojure.string/split-lines
+             string/split-lines
              (map #(subs % 2)))))
 
 (defn clone-or-fetch-mirror-repo
