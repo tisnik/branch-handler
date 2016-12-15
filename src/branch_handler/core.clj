@@ -15,6 +15,9 @@
 (def verbose false)
 (def port    3000)
 (def workdir "/tmp/bare-repositories")
+(def job-list-command "/api/json?tree=jobs[name]")
+(def branch-job-prefix "branch-")
+
 
 (def jenkins-url (System/getenv "JENKINS_URL"))
 
@@ -85,14 +88,28 @@
               (clone-mirror-repo workdir group reponame repository-url))))
 
 (defn start-jenkins-jobs
-    [action]
+    [jenkins-url action]
     (let [original-data (:original-data action)]
         (clojure.pprint/pprint original-data)
         )
 )
 
+(defn filter-branch-jobs
+    [all-jobs prefix]
+    (for [job all-jobs :when (.startsWith (get job "name") prefix)]
+        (get job "name")))
+
+(defn read-jobs-for-branches
+    [jenkins-url job-list-command branch-job-prefix]
+    (-> (jenkins-api/read-list-of-all-jobs jenkins-url job-list-command)
+        (filter-branch-jobs branch-job-prefix)))
+
+(read-jobs-for-branches "http://10.34.3.139:8080" job-list-command branch-job-prefix)
+
 (defn create-or-delete-jenkins-job
-    [action]
+    [jenkins-url job-list-command branch-job-prefix action]
+    (log/info "Create-or-delete-jenkins-job")
+    (let [jobs-for-branches (read-jobs-for-branches jenkins-url job-list-command branch-job-prefix)]
 )
 
 (defn create-action-queue
@@ -105,10 +122,8 @@
         (when-let [action (.take actions-queue)] ; blocking operation
             (log/info "Started action for repository" action)
             (clone-or-fetch-mirror-repo action)
-            (create-or-delete-jenkins-job action)
-            (start-jenkins-jobs action)
-            ; create-new-jenkins-jobs
-            ; start-new-jobs
+            (create-or-delete-jenkins-job jenkins-url job-list-command branch-job-prefix action)
+            (start-jenkins-jobs jenkins-url action)
             (log/info "Finished action for repository" action)
         )))
 
