@@ -14,7 +14,9 @@
                                                       javax.jms/jms
                                                       com.sun.jmdk/jmxtools
                                                       com.sun.jmx/jmxri]]
-                   [org.slf4j/slf4j-log4j12 "1.6.6"]]
+                   [org.slf4j/slf4j-log4j12 "1.6.6"]
+                   [org.clojars.tisnik/clj-jenkins-api "0.10.0-SNAPSHOT"]
+                   ]
     :dev-dependencies [[lein-ring "0.8.10"]]
     :plugins [[lein-ring "0.8.10"]
               [codox "0.8.11"]
