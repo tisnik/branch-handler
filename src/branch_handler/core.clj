@@ -104,8 +104,13 @@
 
 (defn parse-job-name
     [branch-job-prefix job-name]
-    {:name job-name
-    })
+    (let [parsed (clojure.string/split job-name #"\+")]
+         (if (= (count parsed) 3)
+            {:name       job-name
+             :group      (subs (clojure.string/trim (first parsed)) (count branch-job-prefix))
+             :repository (clojure.string/trim (second parsed))
+             :branch     (clojure.string/trim (nth parsed 2))
+            })))
 
 (defn parse-job-names
     [branch-job-prefix job-names]
@@ -121,7 +126,6 @@
           jobs-info      (parse-job-names branch-job-prefix jobs-for-branches)
           branch-list-in-repo (read-branch-list-from-repo workdir group reponame)]
           jobs-info))
-
 
 (defn create-action-queue
     []
