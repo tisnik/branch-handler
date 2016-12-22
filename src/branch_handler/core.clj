@@ -102,14 +102,26 @@
     (-> (jenkins-api/read-list-of-all-jobs jenkins-url job-list-command)
         (filter-branch-jobs branch-job-prefix)))
 
+(defn parse-job-name
+    [branch-job-prefix job-name]
+    {:name job-name
+    })
+
+(defn parse-job-names
+    [branch-job-prefix job-names]
+    (for [job-name job-names]
+        (parse-job-name branch-job-prefix job-name)))
+
 (defn create-or-delete-jenkins-job
     [jenkins-url job-list-command branch-job-prefix action]
     (log/info "Create-or-delete-jenkins-job")
     (let [reponame       (:name action)
           group          (:group action)
-          jobs-for-branches (read-jobs-for-branches jenkins-url job-list-command branch-job-prefix)
+          jobs-for-branches   (read-jobs-for-branches jenkins-url job-list-command branch-job-prefix)
+          jobs-info      (parse-job-names branch-job-prefix jobs-for-branches)
           branch-list-in-repo (read-branch-list-from-repo workdir group reponame)]
-          branch-list-in-repo))
+          jobs-info))
+
 
 (defn create-action-queue
     []
