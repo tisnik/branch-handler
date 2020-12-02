@@ -202,7 +202,7 @@
         repository-group (-> gitlab-info :project :namespace)
         branch           (get-branch (:ref gitlab-info))
         before           (:before gitlab-info)
-        after            (-> gitlab-info :after)
+        after            (:after gitlab-info)
         operation        (get-operation before after)]
     (if verbose
       (clojure.pprint/pprint gitlab-info))
