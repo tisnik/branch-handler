@@ -33,7 +33,8 @@
   :plugins [[lein-ring "0.8.10"]
             [codox "0.8.11"]
             [test2junit "1.1.0"]
-            [lein-cloverage "1.0.6"]]
+            [lein-cloverage "1.0.6"]
+            [lein-kibit "0.1.8"]]
   :main ^:skip-aot branch-handler.core
   :ring {:handler branch-handler.core/ring-app}
   :target-path "target/%s"
