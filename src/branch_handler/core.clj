@@ -246,9 +246,9 @@
 (defn create-workdir
   [workdir]
   (let [directory (new java.io.File workdir)]
-    (when (not (.isDirectory directory))
+    (when-not (.isDirectory directory))
       (log/info "Creating work directory" (.getAbsolutePath directory))
-      (.mkdir directory))))
+      (.mkdir directory)))
 
 (defn -main
   "Entry point to the branch handler service server."
