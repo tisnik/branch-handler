@@ -30,7 +30,7 @@
                  [org.clojars.tisnik/clj-jenkins-api "0.10.0-SNAPSHOT"]
                  [org.clojars.tisnik/clj-fileutils "0.2.0-SNAPSHOT"]]
   :dev-dependencies [[lein-ring "0.8.10"]]
-  :plugins [[lein-ring "0.8.10"]
+  :plugins [[lein-ring "0.12.5"]
             [codox "0.8.11"]
             [test2junit "1.1.0"]
             [lein-test-out "0.3.1"]
