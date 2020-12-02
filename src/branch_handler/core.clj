@@ -201,7 +201,7 @@
         repository-name  (-> gitlab-info :repository :name)
         repository-group (-> gitlab-info :project :namespace)
         branch           (get-branch (:ref gitlab-info))
-        before           (-> gitlab-info :before)
+        before           (:before gitlab-info)
         after            (-> gitlab-info :after)
         operation        (get-operation before after)]
     (if verbose
