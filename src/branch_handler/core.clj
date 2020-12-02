@@ -233,8 +233,9 @@
 
 (def ring-app
   "Definition of a Ring-based application behaviour."
-  (-> http-request-handler      ; handle all events
-      http-params/wrap-params)) ; and process request parameters, of course
+  ; handle all events
+  ; and process request parameters, of course
+  (http-params/wrap-params http-request-handler))
 
 (defn start-server
   "Start the service on regular machine."
