@@ -200,7 +200,7 @@
         repository-url   (-> gitlab-info :repository :url)
         repository-name  (-> gitlab-info :repository :name)
         repository-group (-> gitlab-info :project :namespace)
-        branch           (get-branch (-> gitlab-info :ref))
+        branch           (get-branch (:ref gitlab-info))
         before           (-> gitlab-info :before)
         after            (-> gitlab-info :after)
         operation        (get-operation before after)]
