@@ -2,6 +2,6 @@
 
 ## Git branch handler service
 
-[Generated documentation](doc/index.html)
+[Generated documentation](https://tisnik.github.io/branch-handler/index.html)
 
-[Coverage report](doc/coverage/index.html)
+[Coverage report](https://tisnik.github.io/branch-handler/coverage/index.html)
