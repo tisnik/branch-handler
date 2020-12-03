@@ -26,14 +26,29 @@
 (require '[clj-fileutils.fileutils :as file-utils])
 (require '[clj-jenkins-api.jenkins-api :as jenkins-api])
 
-(def verbose false)
-(def port    3000)
-(def workdir "/tmp/bare-repositories")
-(def job-list-command "/api/json?tree=jobs[name]")
-(def branch-job-prefix "branch-")
+(def verbose
+  "Flag to enable or disable verbosity level."
+  false)
 
+(def port
+  "Default port for the service."
+  3000)
 
-(def jenkins-url (System/getenv "JENKINS_URL"))
+(def workdir
+  "Working directory."
+  "/tmp/bare-repositories")
+
+(def job-list-command
+  "Command used to retrieve job list from Jenkins."
+  "/api/json?tree=jobs[name]")
+
+(def branch-job-prefix
+  "Prefix used for all 'branch' build jobs."
+  "branch-")
+
+(def jenkins-url
+  "URL to Jenkins server."
+  (System/getenv "JENKINS_URL"))
 
 (defn read-request-body
   "Read all informations from the request body."
@@ -41,38 +56,45 @@
   (file-utils/slurp- (:body request)))
 
 (defn log-request
+  "Record an event about request into log."
   [request]
   (log/info "Handling request: " (:uri request) (:remote-addr request))
   (if verbose
     (clojure.pprint/pprint request)))
 
 (defn send-response
+  "Send response in HTML format to client."
   [response-text]
   (-> (http-response/response response-text)
       (http-response/content-type "text/html")))
 
 (defn parse-gitlab-info
+  "Parse payload sent from GitLab in response body."
   [request]
   (let [body (read-request-body request)]
     (if body
       (json/read-str body :key-fn clojure.core/keyword))))
 
 (defn repo-workdir
+  "Construct name of work directory for given group and repository name."
   [workdir group reponame]
   (string/join "/" [workdir group reponame]))
 
 (defn repodir-exists?
+  "Check if directory exist for given group and repository name."
   [workdir group reponame]
   (let [f (new java.io.File (repo-workdir workdir group reponame))]
     (.isDirectory f)))
 
 (defn fetch-mirror-repo
+  "Fetch the content of selected repository."
   [workdir group reponame repository-url]
   (log/info "Fetching mirror repository" repository-url)
   ; TODO test --prune
   (shell/sh "git" "--git-dir" (repo-workdir workdir group reponame) "fetch"))
 
 (defn clone-mirror-repo
+  "Clone content of selected repository."
   [workdir group reponame repository-url]
   (log/info "Cloning mirror repository" repository-url)
   (shell/sh "git"
@@ -82,6 +104,7 @@
             (repo-workdir workdir group reponame)))
 
 (defn read-branch-list-from-repo
+  "Read list of all branches from selected repository."
   [workdir group reponame]
   (let [repodir (repo-workdir workdir group reponame)]
     (log/info "Reading branches from repository" repodir)
@@ -94,6 +117,7 @@
          (map #(subs % 2)))))
 
 (defn clone-or-fetch-mirror-repo
+  "Clone the repository or fetch data if directory with clone already exist."
   [action]
   (log/info "Cloning or fetching repository")
   (let [reponame       (:name action)
@@ -105,22 +129,26 @@
       (clone-mirror-repo workdir group reponame repository-url))))
 
 (defn start-jenkins-jobs
+  "Call Jenkins to start selected job."
   [jenkins-url action]
   (let [original-data (:original-data action)]
     (clojure.pprint/pprint original-data)))
 
 (defn filter-branch-jobs
+  "Filter jobs according to given prefix in job name."
   [all-jobs prefix]
   (for [job all-jobs
         :when (.startsWith (get job "name") prefix)]
     (get job "name")))
 
 (defn read-jobs-for-branches
+  "Read list of all jobs having specified prefix in job name."
   [jenkins-url job-list-command branch-job-prefix]
   (-> (jenkins-api/read-list-of-all-jobs jenkins-url job-list-command)
       (filter-branch-jobs branch-job-prefix)))
 
 (defn parse-job-name
+  "Parse the job name, try to get group, repository, and branch from it."
   [branch-job-prefix job-name]
   (let [parsed (clojure.string/split job-name #"\+")]
     (if (= (count parsed) 3)
@@ -131,11 +159,13 @@
        :branch     (clojure.string/trim (nth parsed 2))})))
 
 (defn parse-job-names
+  "Parse all job names, try to get group, repository, and branch from them."
   [branch-job-prefix job-names]
   (for [job-name job-names]
        (parse-job-name branch-job-prefix job-name)))
 
 (defn create-or-delete-jenkins-job
+  "Create or delete Jenkins job according to selected action."
   [jenkins-url job-list-command branch-job-prefix action]
   (log/info "Create-or-delete-jenkins-job")
   (let [reponame       (:name action)
@@ -148,10 +178,12 @@
     jobs-info))
 
 (defn create-action-queue
+  "Construct queue to store all actions that needs to be performed."
   []
   (java.util.concurrent.LinkedBlockingQueue.))
 
 (defn action-consumer
+  "Consumer that process messages dequed from action queue."
   [actions-queue]
   (while true
          (when-let [action (.take actions-queue)] ; blocking operation
@@ -165,18 +197,23 @@
            (log/info "Finished action for repository" action))))
 
 (defn start-action-consumer
+  "Start consumer of action queue in its own thread."
   [actions-queue]
   (log/info "Starting actions consumer")
   (future                                    ; start consumer in its own thread
     (action-consumer actions-queue)))
 
 (defn new-action
+  "Plan for a new action via action queue."
   [actions-queue action]
   (.put actions-queue action))
 
-(def empty-SHA "0000000000000000000000000000000000000000")
+(def empty-SHA
+  "Default SHA used to detect operation that needs to be performed."
+  "0000000000000000000000000000000000000000")
 
 (defn get-operation
+  "Get the next operation that needs to be planned."
   [before after]
   (if (= before empty-SHA)
     (if (= after empty-SHA)
@@ -187,14 +224,18 @@
         :branch-updated)))
 
 (defn get-branch
+  "Retrieve branch name for given Git reference."
   [git-ref]
   (try (subs git-ref (inc (.lastIndexOf git-ref "/")))
        (catch Exception e
               nil)))
 
-(def actions-queue (create-action-queue))
+(def actions-queue
+  "Queue to plan actions that will need to be performed."
+  (create-action-queue))
 
 (defn api-call-handler
+  "Handler for all API calls."
   [request]
   (let [gitlab-info      (parse-gitlab-info request)
         repository-url   (-> gitlab-info :repository :url)
@@ -244,6 +285,7 @@
   (jetty/run-jetty ring-app {:port port}))
 
 (defn create-workdir
+  "Create new working directory."
   [workdir]
   (let [directory (new java.io.File workdir)]
     (when-not (.isDirectory directory))
