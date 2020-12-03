@@ -33,7 +33,7 @@
   :plugins [[lein-ring "0.12.5"]
             [lein-codox "0.10.7"]
             [test2junit "1.1.0"]
-            [lein-test-out "0.3.1"]
+            ;[lein-test-out "0.3.1"]
             [lein-cloverage "1.0.7-SNAPSHOT"]
             [lein-kibit "0.1.8"]]
   :main ^:skip-aot branch-handler.core
