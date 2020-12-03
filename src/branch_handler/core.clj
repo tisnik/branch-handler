@@ -12,18 +12,18 @@
 
 (ns branch-handler.core)
 
-(require '[ring.adapter.jetty      :as jetty])
-(require '[ring.middleware.params  :as http-params])
-(require '[ring.util.response      :as http-response])
+(require '[ring.adapter.jetty          :as jetty])
+(require '[ring.middleware.params      :as http-params])
+(require '[ring.util.response          :as http-response])
 
-(require '[clojure.string          :as string])
-(require '[clojure.java.shell      :as shell])
-(require '[clojure.data.json       :as json])
+(require '[clojure.string              :as string])
+(require '[clojure.java.shell          :as shell])
+(require '[clojure.data.json           :as json])
 
-(require '[clojure.tools.cli       :as cli])
-(require '[clojure.tools.logging   :as log])
+(require '[clojure.tools.cli           :as cli])
+(require '[clojure.tools.logging       :as log])
 
-(require '[clj-fileutils.fileutils :as file-utils])
+(require '[clj-fileutils.fileutils     :as file-utils])
 (require '[clj-jenkins-api.jenkins-api :as jenkins-api])
 
 (def verbose
