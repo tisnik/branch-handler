@@ -34,7 +34,7 @@
             [codox "0.8.11"]
             [test2junit "1.1.0"]
             [lein-test-out "0.3.1"]
-            [lein-cloverage "1.0.6"]
+            [lein-cloverage "1.0.7-SNAPSHOT"]
             [lein-kibit "0.1.8"]]
   :main ^:skip-aot branch-handler.core
   :ring {:handler branch-handler.core/ring-app}
