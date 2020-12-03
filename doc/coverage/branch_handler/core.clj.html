@@ -1,0 +1,917 @@
+<html>
+ <head>
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" href="../coverage.css"/>  <title> branch_handler/core.clj </title>
+ </head>
+ <body>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                001&nbsp;&nbsp;;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                002&nbsp;&nbsp;;&nbsp;&nbsp;(C)&nbsp;Copyright&nbsp;2016,&nbsp;2020&nbsp;&nbsp;Pavel&nbsp;Tisnovsky
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                003&nbsp;&nbsp;;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                004&nbsp;&nbsp;;&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;This&nbsp;program&nbsp;and&nbsp;the&nbsp;accompanying&nbsp;materials
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                005&nbsp;&nbsp;;&nbsp;&nbsp;are&nbsp;made&nbsp;available&nbsp;under&nbsp;the&nbsp;terms&nbsp;of&nbsp;the&nbsp;Eclipse&nbsp;Public&nbsp;License&nbsp;v1.0
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                006&nbsp;&nbsp;;&nbsp;&nbsp;which&nbsp;accompanies&nbsp;this&nbsp;distribution,&nbsp;and&nbsp;is&nbsp;available&nbsp;at
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                007&nbsp;&nbsp;;&nbsp;&nbsp;http:&#x2F;&#x2F;www.eclipse.org&#x2F;legal&#x2F;epl-v10.html
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                008&nbsp;&nbsp;;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                009&nbsp;&nbsp;;&nbsp;&nbsp;Contributors:
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                010&nbsp;&nbsp;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pavel&nbsp;Tisnovsky
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                011&nbsp;&nbsp;;
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                012&nbsp;&nbsp;
+                </span><br/>
+<span class="partial" title="1 out of 22 forms covered">
+                013&nbsp;&nbsp;(ns&nbsp;branch-handler.core)
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                014&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="3 out of 3 forms covered">
+                015&nbsp;&nbsp;(require&nbsp;&#x27;[ring.adapter.jetty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:as&nbsp;jetty])
+                </span><br/>
+<span class="covered" title="3 out of 3 forms covered">
+                016&nbsp;&nbsp;(require&nbsp;&#x27;[ring.middleware.params&nbsp;&nbsp;:as&nbsp;http-params])
+                </span><br/>
+<span class="covered" title="3 out of 3 forms covered">
+                017&nbsp;&nbsp;(require&nbsp;&#x27;[ring.util.response&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:as&nbsp;http-response])
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                018&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="3 out of 3 forms covered">
+                019&nbsp;&nbsp;(require&nbsp;&#x27;[clojure.string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:as&nbsp;string])
+                </span><br/>
+<span class="covered" title="3 out of 3 forms covered">
+                020&nbsp;&nbsp;(require&nbsp;&#x27;[clojure.java.shell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:as&nbsp;shell])
+                </span><br/>
+<span class="covered" title="3 out of 3 forms covered">
+                021&nbsp;&nbsp;(require&nbsp;&#x27;[clojure.data.json&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:as&nbsp;json])
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                022&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="3 out of 3 forms covered">
+                023&nbsp;&nbsp;(require&nbsp;&#x27;[clojure.tools.cli&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:as&nbsp;cli])
+                </span><br/>
+<span class="covered" title="3 out of 3 forms covered">
+                024&nbsp;&nbsp;(require&nbsp;&#x27;[clojure.tools.logging&nbsp;&nbsp;&nbsp;:as&nbsp;log])
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                025&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="3 out of 3 forms covered">
+                026&nbsp;&nbsp;(require&nbsp;&#x27;[clj-fileutils.fileutils&nbsp;:as&nbsp;file-utils])
+                </span><br/>
+<span class="covered" title="3 out of 3 forms covered">
+                027&nbsp;&nbsp;(require&nbsp;&#x27;[clj-jenkins-api.jenkins-api&nbsp;:as&nbsp;jenkins-api])
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                028&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="2 out of 2 forms covered">
+                029&nbsp;&nbsp;(def&nbsp;verbose
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                030&nbsp;&nbsp;&nbsp;&nbsp;&quot;Flag&nbsp;to&nbsp;enable&nbsp;or&nbsp;disable&nbsp;verbosity&nbsp;level.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                031&nbsp;&nbsp;&nbsp;&nbsp;false)
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                032&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="2 out of 2 forms covered">
+                033&nbsp;&nbsp;(def&nbsp;port
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                034&nbsp;&nbsp;&nbsp;&nbsp;&quot;Default&nbsp;port&nbsp;for&nbsp;the&nbsp;service.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                035&nbsp;&nbsp;&nbsp;&nbsp;3000)
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                036&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="2 out of 2 forms covered">
+                037&nbsp;&nbsp;(def&nbsp;workdir
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                038&nbsp;&nbsp;&nbsp;&nbsp;&quot;Working&nbsp;directory.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                039&nbsp;&nbsp;&nbsp;&nbsp;&quot;&#x2F;tmp&#x2F;bare-repositories&quot;)
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                040&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="2 out of 2 forms covered">
+                041&nbsp;&nbsp;(def&nbsp;job-list-command
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                042&nbsp;&nbsp;&nbsp;&nbsp;&quot;Command&nbsp;used&nbsp;to&nbsp;retrieve&nbsp;job&nbsp;list&nbsp;from&nbsp;Jenkins.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                043&nbsp;&nbsp;&nbsp;&nbsp;&quot;&#x2F;api&#x2F;json?tree=jobs[name]&quot;)
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                044&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="2 out of 2 forms covered">
+                045&nbsp;&nbsp;(def&nbsp;branch-job-prefix
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                046&nbsp;&nbsp;&nbsp;&nbsp;&quot;Prefix&nbsp;used&nbsp;for&nbsp;all&nbsp;&#x27;branch&#x27;&nbsp;build&nbsp;jobs.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                047&nbsp;&nbsp;&nbsp;&nbsp;&quot;branch-&quot;)
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                048&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                049&nbsp;&nbsp;(def&nbsp;jenkins-url
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                050&nbsp;&nbsp;&nbsp;&nbsp;&quot;URL&nbsp;to&nbsp;Jenkins&nbsp;server.&quot;
+                </span><br/>
+<span class="covered" title="2 out of 2 forms covered">
+                051&nbsp;&nbsp;&nbsp;&nbsp;(System&#x2F;getenv&nbsp;&quot;JENKINS_URL&quot;))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                052&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                053&nbsp;&nbsp;(defn&nbsp;read-request-body
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                054&nbsp;&nbsp;&nbsp;&nbsp;&quot;Read&nbsp;all&nbsp;informations&nbsp;from&nbsp;the&nbsp;request&nbsp;body.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                055&nbsp;&nbsp;&nbsp;&nbsp;[request]
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                056&nbsp;&nbsp;&nbsp;&nbsp;(file-utils&#x2F;slurp-&nbsp;(:body&nbsp;request)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                057&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                058&nbsp;&nbsp;(defn&nbsp;log-request
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                059&nbsp;&nbsp;&nbsp;&nbsp;&quot;Record&nbsp;an&nbsp;event&nbsp;about&nbsp;request&nbsp;into&nbsp;log.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                060&nbsp;&nbsp;&nbsp;&nbsp;[request]
+                </span><br/>
+<span class="not-covered" title="0 out of 23 forms covered">
+                061&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Handling&nbsp;request:&nbsp;&quot;&nbsp;(:uri&nbsp;request)&nbsp;(:remote-addr&nbsp;request))
+                </span><br/>
+<span class="not-covered" title="0 out of 2 forms covered">
+                062&nbsp;&nbsp;&nbsp;&nbsp;(if&nbsp;verbose
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                063&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(clojure.pprint&#x2F;pprint&nbsp;request)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                064&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                065&nbsp;&nbsp;(defn&nbsp;send-response
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                066&nbsp;&nbsp;&nbsp;&nbsp;&quot;Send&nbsp;response&nbsp;in&nbsp;HTML&nbsp;format&nbsp;to&nbsp;client.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                067&nbsp;&nbsp;&nbsp;&nbsp;[response-text]
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                068&nbsp;&nbsp;&nbsp;&nbsp;(-&gt;&nbsp;(http-response&#x2F;response&nbsp;response-text)
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                069&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(http-response&#x2F;content-type&nbsp;&quot;text&#x2F;html&quot;)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                070&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                071&nbsp;&nbsp;(defn&nbsp;parse-gitlab-info
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                072&nbsp;&nbsp;&nbsp;&nbsp;&quot;Parse&nbsp;payload&nbsp;sent&nbsp;from&nbsp;GitLab&nbsp;in&nbsp;response&nbsp;body.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                073&nbsp;&nbsp;&nbsp;&nbsp;[request]
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                074&nbsp;&nbsp;&nbsp;&nbsp;(let&nbsp;[body&nbsp;(read-request-body&nbsp;request)]
+                </span><br/>
+<span class="not-covered" title="0 out of 2 forms covered">
+                075&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(if&nbsp;body
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                076&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(json&#x2F;read-str&nbsp;body&nbsp;:key-fn&nbsp;clojure.core&#x2F;keyword))))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                077&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                078&nbsp;&nbsp;(defn&nbsp;repo-workdir
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                079&nbsp;&nbsp;&nbsp;&nbsp;&quot;Construct&nbsp;name&nbsp;of&nbsp;work&nbsp;directory&nbsp;for&nbsp;given&nbsp;group&nbsp;and&nbsp;repository&nbsp;name.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                080&nbsp;&nbsp;&nbsp;&nbsp;[workdir&nbsp;group&nbsp;reponame]
+                </span><br/>
+<span class="not-covered" title="0 out of 7 forms covered">
+                081&nbsp;&nbsp;&nbsp;&nbsp;(string&#x2F;join&nbsp;&quot;&#x2F;&quot;&nbsp;[workdir&nbsp;group&nbsp;reponame]))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                082&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                083&nbsp;&nbsp;(defn&nbsp;repodir-exists?
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                084&nbsp;&nbsp;&nbsp;&nbsp;&quot;Check&nbsp;if&nbsp;directory&nbsp;exist&nbsp;for&nbsp;given&nbsp;group&nbsp;and&nbsp;repository&nbsp;name.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                085&nbsp;&nbsp;&nbsp;&nbsp;[workdir&nbsp;group&nbsp;reponame]
+                </span><br/>
+<span class="not-covered" title="0 out of 7 forms covered">
+                086&nbsp;&nbsp;&nbsp;&nbsp;(let&nbsp;[f&nbsp;(new&nbsp;java.io.File&nbsp;(repo-workdir&nbsp;workdir&nbsp;group&nbsp;reponame))]
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                087&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(.isDirectory&nbsp;f)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                088&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                089&nbsp;&nbsp;(defn&nbsp;fetch-mirror-repo
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                090&nbsp;&nbsp;&nbsp;&nbsp;&quot;Fetch&nbsp;the&nbsp;content&nbsp;of&nbsp;selected&nbsp;repository.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                091&nbsp;&nbsp;&nbsp;&nbsp;[workdir&nbsp;group&nbsp;reponame&nbsp;repository-url]
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                092&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Fetching&nbsp;mirror&nbsp;repository&quot;&nbsp;repository-url)
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                093&nbsp;&nbsp;&nbsp;&nbsp;;&nbsp;TODO&nbsp;test&nbsp;--prune
+                </span><br/>
+<span class="not-covered" title="0 out of 10 forms covered">
+                094&nbsp;&nbsp;&nbsp;&nbsp;(shell&#x2F;sh&nbsp;&quot;git&quot;&nbsp;&quot;--git-dir&quot;&nbsp;(repo-workdir&nbsp;workdir&nbsp;group&nbsp;reponame)&nbsp;&quot;fetch&quot;))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                095&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                096&nbsp;&nbsp;(defn&nbsp;clone-mirror-repo
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                097&nbsp;&nbsp;&nbsp;&nbsp;&quot;Clone&nbsp;content&nbsp;of&nbsp;selected&nbsp;repository.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                098&nbsp;&nbsp;&nbsp;&nbsp;[workdir&nbsp;group&nbsp;reponame&nbsp;repository-url]
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                099&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Cloning&nbsp;mirror&nbsp;repository&quot;&nbsp;repository-url)
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                100&nbsp;&nbsp;&nbsp;&nbsp;(shell&#x2F;sh&nbsp;&quot;git&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                101&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;clone&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                102&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;--mirror&quot;
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                103&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repository-url
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                104&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(repo-workdir&nbsp;workdir&nbsp;group&nbsp;reponame)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                105&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                106&nbsp;&nbsp;(defn&nbsp;read-branch-list-from-repo
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                107&nbsp;&nbsp;&nbsp;&nbsp;&quot;Read&nbsp;list&nbsp;of&nbsp;all&nbsp;branches&nbsp;from&nbsp;selected&nbsp;repository.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                108&nbsp;&nbsp;&nbsp;&nbsp;[workdir&nbsp;group&nbsp;reponame]
+                </span><br/>
+<span class="not-covered" title="0 out of 6 forms covered">
+                109&nbsp;&nbsp;&nbsp;&nbsp;(let&nbsp;[repodir&nbsp;(repo-workdir&nbsp;workdir&nbsp;group&nbsp;reponame)]
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                110&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Reading&nbsp;branches&nbsp;from&nbsp;repository&quot;&nbsp;repodir)
+                </span><br/>
+<span class="not-covered" title="0 out of 6 forms covered">
+                111&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(-&gt;&gt;&nbsp;(shell&#x2F;sh&nbsp;&quot;git&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                112&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;--git-dir&quot;
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                113&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(repo-workdir&nbsp;workdir&nbsp;group&nbsp;reponame)
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                114&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;branch&quot;)
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                115&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:out
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                116&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string&#x2F;split-lines
+                </span><br/>
+<span class="not-covered" title="0 out of 9 forms covered">
+                117&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(map&nbsp;#(subs&nbsp;%&nbsp;2)))))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                118&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                119&nbsp;&nbsp;(defn&nbsp;clone-or-fetch-mirror-repo
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                120&nbsp;&nbsp;&nbsp;&nbsp;&quot;Clone&nbsp;the&nbsp;repository&nbsp;or&nbsp;fetch&nbsp;data&nbsp;if&nbsp;directory&nbsp;with&nbsp;clone&nbsp;already&nbsp;exist.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                121&nbsp;&nbsp;&nbsp;&nbsp;[action]
+                </span><br/>
+<span class="not-covered" title="0 out of 17 forms covered">
+                122&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Cloning&nbsp;or&nbsp;fetching&nbsp;repository&quot;)
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                123&nbsp;&nbsp;&nbsp;&nbsp;(let&nbsp;[reponame&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(:name&nbsp;action)
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                124&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;group&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(:group&nbsp;action)
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                125&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repository-url&nbsp;(:url&nbsp;action)]
+                </span><br/>
+<span class="not-covered" title="0 out of 21 forms covered">
+                126&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;(repo-workdir&nbsp;workdir&nbsp;group&nbsp;reponame))
+                </span><br/>
+<span class="not-covered" title="0 out of 6 forms covered">
+                127&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(if&nbsp;(repodir-exists?&nbsp;workdir&nbsp;group&nbsp;reponame)
+                </span><br/>
+<span class="not-covered" title="0 out of 6 forms covered">
+                128&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(fetch-mirror-repo&nbsp;workdir&nbsp;group&nbsp;reponame&nbsp;repository-url)
+                </span><br/>
+<span class="not-covered" title="0 out of 6 forms covered">
+                129&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(clone-mirror-repo&nbsp;workdir&nbsp;group&nbsp;reponame&nbsp;repository-url))))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                130&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                131&nbsp;&nbsp;(defn&nbsp;start-jenkins-jobs
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                132&nbsp;&nbsp;&nbsp;&nbsp;&quot;Call&nbsp;Jenkins&nbsp;to&nbsp;start&nbsp;selected&nbsp;job.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                133&nbsp;&nbsp;&nbsp;&nbsp;[jenkins-url&nbsp;action]
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                134&nbsp;&nbsp;&nbsp;&nbsp;(let&nbsp;[original-data&nbsp;(:original-data&nbsp;action)]
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                135&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(clojure.pprint&#x2F;pprint&nbsp;original-data)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                136&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                137&nbsp;&nbsp;(defn&nbsp;filter-branch-jobs
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                138&nbsp;&nbsp;&nbsp;&nbsp;&quot;Filter&nbsp;jobs&nbsp;according&nbsp;to&nbsp;given&nbsp;prefix&nbsp;in&nbsp;job&nbsp;name.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                139&nbsp;&nbsp;&nbsp;&nbsp;[all-jobs&nbsp;prefix]
+                </span><br/>
+<span class="not-covered" title="0 out of 31 forms covered">
+                140&nbsp;&nbsp;&nbsp;&nbsp;(for&nbsp;[job&nbsp;all-jobs
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                141&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:when&nbsp;(.startsWith&nbsp;(get&nbsp;job&nbsp;&quot;name&quot;)&nbsp;prefix)]
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                142&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(get&nbsp;job&nbsp;&quot;name&quot;)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                143&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                144&nbsp;&nbsp;(defn&nbsp;read-jobs-for-branches
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                145&nbsp;&nbsp;&nbsp;&nbsp;&quot;Read&nbsp;list&nbsp;of&nbsp;all&nbsp;jobs&nbsp;having&nbsp;specified&nbsp;prefix&nbsp;in&nbsp;job&nbsp;name.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                146&nbsp;&nbsp;&nbsp;&nbsp;[jenkins-url&nbsp;job-list-command&nbsp;branch-job-prefix]
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                147&nbsp;&nbsp;&nbsp;&nbsp;(-&gt;&nbsp;(jenkins-api&#x2F;read-list-of-all-jobs&nbsp;jenkins-url&nbsp;job-list-command)
+                </span><br/>
+<span class="not-covered" title="0 out of 2 forms covered">
+                148&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(filter-branch-jobs&nbsp;branch-job-prefix)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                149&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                150&nbsp;&nbsp;(defn&nbsp;parse-job-name
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                151&nbsp;&nbsp;&nbsp;&nbsp;&quot;Parse&nbsp;the&nbsp;job&nbsp;name,&nbsp;try&nbsp;to&nbsp;get&nbsp;group,&nbsp;repository,&nbsp;and&nbsp;branch&nbsp;from&nbsp;it.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                152&nbsp;&nbsp;&nbsp;&nbsp;[branch-job-prefix&nbsp;job-name]
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                153&nbsp;&nbsp;&nbsp;&nbsp;(let&nbsp;[parsed&nbsp;(clojure.string&#x2F;split&nbsp;job-name&nbsp;#&quot;\+&quot;)]
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                154&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(if&nbsp;(=&nbsp;(count&nbsp;parsed)&nbsp;3)
+                </span><br/>
+<span class="not-covered" title="0 out of 6 forms covered">
+                155&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{:name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;job-name,
+                </span><br/>
+<span class="not-covered" title="0 out of 7 forms covered">
+                156&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:group&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(subs&nbsp;(clojure.string&#x2F;trim&nbsp;(first&nbsp;parsed))
+                </span><br/>
+<span class="not-covered" title="0 out of 2 forms covered">
+                157&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(count&nbsp;branch-job-prefix)),
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                158&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:repository&nbsp;(clojure.string&#x2F;trim&nbsp;(second&nbsp;parsed)),
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                159&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:branch&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(clojure.string&#x2F;trim&nbsp;(nth&nbsp;parsed&nbsp;2))})))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                160&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                161&nbsp;&nbsp;(defn&nbsp;parse-job-names
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                162&nbsp;&nbsp;&nbsp;&nbsp;&quot;Parse&nbsp;all&nbsp;job&nbsp;names,&nbsp;try&nbsp;to&nbsp;get&nbsp;group,&nbsp;repository,&nbsp;and&nbsp;branch&nbsp;from&nbsp;them.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                163&nbsp;&nbsp;&nbsp;&nbsp;[branch-job-prefix&nbsp;job-names]
+                </span><br/>
+<span class="not-covered" title="0 out of 29 forms covered">
+                164&nbsp;&nbsp;&nbsp;&nbsp;(for&nbsp;[job-name&nbsp;job-names]
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                165&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(parse-job-name&nbsp;branch-job-prefix&nbsp;job-name)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                166&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                167&nbsp;&nbsp;(defn&nbsp;create-or-delete-jenkins-job
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                168&nbsp;&nbsp;&nbsp;&nbsp;&quot;Create&nbsp;or&nbsp;delete&nbsp;Jenkins&nbsp;job&nbsp;according&nbsp;to&nbsp;selected&nbsp;action.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                169&nbsp;&nbsp;&nbsp;&nbsp;[jenkins-url&nbsp;job-list-command&nbsp;branch-job-prefix&nbsp;action]
+                </span><br/>
+<span class="not-covered" title="0 out of 17 forms covered">
+                170&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Create-or-delete-jenkins-job&quot;)
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                171&nbsp;&nbsp;&nbsp;&nbsp;(let&nbsp;[reponame&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(:name&nbsp;action)
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                172&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;group&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(:group&nbsp;action)
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                173&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jobs-for-branches&nbsp;(read-jobs-for-branches&nbsp;jenkins-url
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                174&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;job-list-command
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                175&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;branch-job-prefix)
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                176&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jobs-info&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(parse-job-names&nbsp;branch-job-prefix&nbsp;jobs-for-branches)
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                177&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;branch-list-in-repo&nbsp;(read-branch-list-from-repo&nbsp;workdir&nbsp;group&nbsp;reponame)]
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                178&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jobs-info))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                179&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                180&nbsp;&nbsp;(defn&nbsp;create-action-queue
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                181&nbsp;&nbsp;&nbsp;&nbsp;&quot;Construct&nbsp;queue&nbsp;to&nbsp;store&nbsp;all&nbsp;actions&nbsp;that&nbsp;needs&nbsp;to&nbsp;be&nbsp;performed.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                182&nbsp;&nbsp;&nbsp;&nbsp;[]
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                183&nbsp;&nbsp;&nbsp;&nbsp;(java.util.concurrent.LinkedBlockingQueue.))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                184&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                185&nbsp;&nbsp;(defn&nbsp;action-consumer
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                186&nbsp;&nbsp;&nbsp;&nbsp;&quot;Consumer&nbsp;that&nbsp;process&nbsp;messages&nbsp;dequed&nbsp;from&nbsp;action&nbsp;queue.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                187&nbsp;&nbsp;&nbsp;&nbsp;[actions-queue]
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                188&nbsp;&nbsp;&nbsp;&nbsp;(while&nbsp;true
+                </span><br/>
+<span class="not-covered" title="0 out of 7 forms covered">
+                189&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(when-let&nbsp;[action&nbsp;(.take&nbsp;actions-queue)]&nbsp;;&nbsp;blocking&nbsp;operation
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                190&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Started&nbsp;action&nbsp;for&nbsp;repository&quot;&nbsp;action)
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                191&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(clone-or-fetch-mirror-repo&nbsp;action)
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                192&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(create-or-delete-jenkins-job&nbsp;jenkins-url
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                193&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;job-list-command
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                194&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;branch-job-prefix
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                195&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;action)
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                196&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(start-jenkins-jobs&nbsp;jenkins-url&nbsp;action)
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                197&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Finished&nbsp;action&nbsp;for&nbsp;repository&quot;&nbsp;action))))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                198&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                199&nbsp;&nbsp;(defn&nbsp;start-action-consumer
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                200&nbsp;&nbsp;&nbsp;&nbsp;&quot;Start&nbsp;consumer&nbsp;of&nbsp;action&nbsp;queue&nbsp;in&nbsp;its&nbsp;own&nbsp;thread.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                201&nbsp;&nbsp;&nbsp;&nbsp;[actions-queue]
+                </span><br/>
+<span class="not-covered" title="0 out of 17 forms covered">
+                202&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Starting&nbsp;actions&nbsp;consumer&quot;)
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                203&nbsp;&nbsp;&nbsp;&nbsp;(future&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;&nbsp;start&nbsp;consumer&nbsp;in&nbsp;its&nbsp;own&nbsp;thread
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                204&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(action-consumer&nbsp;actions-queue)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                205&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                206&nbsp;&nbsp;(defn&nbsp;new-action
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                207&nbsp;&nbsp;&nbsp;&nbsp;&quot;Plan&nbsp;for&nbsp;a&nbsp;new&nbsp;action&nbsp;via&nbsp;action&nbsp;queue.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                208&nbsp;&nbsp;&nbsp;&nbsp;[actions-queue&nbsp;action]
+                </span><br/>
+<span class="not-covered" title="0 out of 2 forms covered">
+                209&nbsp;&nbsp;&nbsp;&nbsp;(.put&nbsp;actions-queue&nbsp;action))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                210&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="2 out of 2 forms covered">
+                211&nbsp;&nbsp;(def&nbsp;empty-SHA
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                212&nbsp;&nbsp;&nbsp;&nbsp;&quot;Default&nbsp;SHA&nbsp;used&nbsp;to&nbsp;detect&nbsp;operation&nbsp;that&nbsp;needs&nbsp;to&nbsp;be&nbsp;performed.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                213&nbsp;&nbsp;&nbsp;&nbsp;&quot;0000000000000000000000000000000000000000&quot;)
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                214&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                215&nbsp;&nbsp;(defn&nbsp;get-operation
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                216&nbsp;&nbsp;&nbsp;&nbsp;&quot;Get&nbsp;the&nbsp;next&nbsp;operation&nbsp;that&nbsp;needs&nbsp;to&nbsp;be&nbsp;planned.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                217&nbsp;&nbsp;&nbsp;&nbsp;[before&nbsp;after]
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                218&nbsp;&nbsp;&nbsp;&nbsp;(if&nbsp;(=&nbsp;before&nbsp;empty-SHA)
+                </span><br/>
+<span class="not-covered" title="0 out of 6 forms covered">
+                219&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(if&nbsp;(=&nbsp;after&nbsp;empty-SHA)
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                220&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:unknown
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                221&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:branch-created)
+                </span><br/>
+<span class="not-covered" title="0 out of 6 forms covered">
+                222&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(if&nbsp;(=&nbsp;after&nbsp;empty-SHA)
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                223&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:branch-deleted
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                224&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:branch-updated)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                225&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                226&nbsp;&nbsp;(defn&nbsp;get-branch
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                227&nbsp;&nbsp;&nbsp;&nbsp;&quot;Retrieve&nbsp;branch&nbsp;name&nbsp;for&nbsp;given&nbsp;Git&nbsp;reference.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                228&nbsp;&nbsp;&nbsp;&nbsp;[git-ref]
+                </span><br/>
+<span class="not-covered" title="0 out of 8 forms covered">
+                229&nbsp;&nbsp;&nbsp;&nbsp;(try&nbsp;(subs&nbsp;git-ref&nbsp;(inc&nbsp;(.lastIndexOf&nbsp;git-ref&nbsp;&quot;&#x2F;&quot;)))
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                230&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(catch&nbsp;Exception&nbsp;e
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                231&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nil)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                232&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                233&nbsp;&nbsp;(def&nbsp;actions-queue
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                234&nbsp;&nbsp;&nbsp;&nbsp;&quot;Queue&nbsp;to&nbsp;plan&nbsp;actions&nbsp;that&nbsp;will&nbsp;need&nbsp;to&nbsp;be&nbsp;performed.&quot;
+                </span><br/>
+<span class="covered" title="2 out of 2 forms covered">
+                235&nbsp;&nbsp;&nbsp;&nbsp;(create-action-queue))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                236&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                237&nbsp;&nbsp;(defn&nbsp;api-call-handler
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                238&nbsp;&nbsp;&nbsp;&nbsp;&quot;Handler&nbsp;for&nbsp;all&nbsp;API&nbsp;calls.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                239&nbsp;&nbsp;&nbsp;&nbsp;[request]
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                240&nbsp;&nbsp;&nbsp;&nbsp;(let&nbsp;[gitlab-info&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(parse-gitlab-info&nbsp;request)
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                241&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repository-url&nbsp;&nbsp;&nbsp;(-&gt;&nbsp;gitlab-info&nbsp;:repository&nbsp;:url)
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                242&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repository-name&nbsp;&nbsp;(-&gt;&nbsp;gitlab-info&nbsp;:repository&nbsp;:name)
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                243&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repository-group&nbsp;(-&gt;&nbsp;gitlab-info&nbsp;:project&nbsp;:namespace)
+                </span><br/>
+<span class="not-covered" title="0 out of 5 forms covered">
+                244&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;branch&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(get-branch&nbsp;(:ref&nbsp;gitlab-info))
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                245&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;before&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(:before&nbsp;gitlab-info)
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                246&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;after&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(:after&nbsp;gitlab-info)
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                247&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;operation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(get-operation&nbsp;before&nbsp;after)]
+                </span><br/>
+<span class="not-covered" title="0 out of 2 forms covered">
+                248&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(if&nbsp;verbose
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                249&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(clojure.pprint&#x2F;pprint&nbsp;gitlab-info))
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                250&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;repository&quot;&nbsp;repository-name)
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                251&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;URL&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repository-url)
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                252&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;group&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repository-group)
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                253&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;branch&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;branch)
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                254&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;before&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;before)
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                255&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;after&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;after)
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                256&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;operation&quot;&nbsp;&nbsp;operation)
+                </span><br/>
+<span class="not-covered" title="0 out of 8 forms covered">
+                257&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(if&nbsp;(contains?&nbsp;#{:branch-created&nbsp;:branch-deleted&nbsp;:branch-updated}&nbsp;operation)
+                </span><br/>
+<span class="not-covered" title="0 out of 8 forms covered">
+                258&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(let&nbsp;[action&nbsp;{:action&nbsp;:clone-or-fetch-repository,
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                259&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:name&nbsp;&nbsp;&nbsp;&nbsp;repository-name,
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                260&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:group&nbsp;&nbsp;&nbsp;repository-group,
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                261&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:url&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repository-url,
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                262&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:original-data&nbsp;gitlab-info}]
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                263&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(new-action&nbsp;actions-queue&nbsp;action)))&nbsp;;&nbsp;add&nbsp;new&nbsp;action&nbsp;into&nbsp;the&nbsp;queue&nbsp;that
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                264&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;&nbsp;will&nbsp;serialize&nbsp;it
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                265&nbsp;&nbsp;&nbsp;&nbsp;))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                266&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                267&nbsp;&nbsp;(defn&nbsp;http-request-handler
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                268&nbsp;&nbsp;&nbsp;&nbsp;&quot;Handler&nbsp;that&nbsp;is&nbsp;called&nbsp;by&nbsp;Ring&nbsp;for&nbsp;all&nbsp;requests&nbsp;received&nbsp;from&nbsp;user(s).&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                269&nbsp;&nbsp;&nbsp;&nbsp;[request]
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                270&nbsp;&nbsp;&nbsp;&nbsp;(log-request&nbsp;request)
+                </span><br/>
+<span class="not-covered" title="0 out of 12 forms covered">
+                271&nbsp;&nbsp;&nbsp;&nbsp;(if&nbsp;(=&nbsp;[:post&nbsp;&quot;&#x2F;&quot;]&nbsp;[(:request-method&nbsp;request)&nbsp;(:uri&nbsp;request)])
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                272&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(api-call-handler&nbsp;request))
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                273&nbsp;&nbsp;&nbsp;&nbsp;(send-response&nbsp;&quot;&quot;))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                274&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                275&nbsp;&nbsp;(def&nbsp;ring-app
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                276&nbsp;&nbsp;&nbsp;&nbsp;&quot;Definition&nbsp;of&nbsp;a&nbsp;Ring-based&nbsp;application&nbsp;behaviour.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                277&nbsp;&nbsp;&nbsp;&nbsp;;&nbsp;handle&nbsp;all&nbsp;events
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                278&nbsp;&nbsp;&nbsp;&nbsp;;&nbsp;and&nbsp;process&nbsp;request&nbsp;parameters,&nbsp;of&nbsp;course
+                </span><br/>
+<span class="covered" title="3 out of 3 forms covered">
+                279&nbsp;&nbsp;&nbsp;&nbsp;(http-params&#x2F;wrap-params&nbsp;http-request-handler))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                280&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                281&nbsp;&nbsp;(defn&nbsp;start-server
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                282&nbsp;&nbsp;&nbsp;&nbsp;&quot;Start&nbsp;the&nbsp;service&nbsp;on&nbsp;regular&nbsp;machine.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                283&nbsp;&nbsp;&nbsp;&nbsp;[ring-app&nbsp;port]
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                284&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Starting&nbsp;the&nbsp;server&nbsp;at&nbsp;the&nbsp;port:&nbsp;&quot;&nbsp;port)
+                </span><br/>
+<span class="not-covered" title="0 out of 6 forms covered">
+                285&nbsp;&nbsp;&nbsp;&nbsp;(jetty&#x2F;run-jetty&nbsp;ring-app&nbsp;{:port&nbsp;port}))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                286&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                287&nbsp;&nbsp;(defn&nbsp;create-workdir
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                288&nbsp;&nbsp;&nbsp;&nbsp;&quot;Create&nbsp;new&nbsp;working&nbsp;directory.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                289&nbsp;&nbsp;&nbsp;&nbsp;[workdir]
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                290&nbsp;&nbsp;&nbsp;&nbsp;(let&nbsp;[directory&nbsp;(new&nbsp;java.io.File&nbsp;workdir)]
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                291&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(when-not&nbsp;(.isDirectory&nbsp;directory))
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                292&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Creating&nbsp;work&nbsp;directory&quot;&nbsp;(.getAbsolutePath&nbsp;directory))
+                </span><br/>
+<span class="not-covered" title="0 out of 1 forms covered">
+                293&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(.mkdir&nbsp;directory)))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                294&nbsp;&nbsp;
+                </span><br/>
+<span class="covered" title="1 out of 1 forms covered">
+                295&nbsp;&nbsp;(defn&nbsp;-main
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                296&nbsp;&nbsp;&nbsp;&nbsp;&quot;Entry&nbsp;point&nbsp;to&nbsp;the&nbsp;branch&nbsp;handler&nbsp;service&nbsp;server.&quot;
+                </span><br/>
+<span class="not-tracked" title="0 out of 0 forms covered">
+                297&nbsp;&nbsp;&nbsp;&nbsp;[&amp;&nbsp;args]
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                298&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;Started&nbsp;app&nbsp;on&nbsp;port&quot;&nbsp;port)
+                </span><br/>
+<span class="not-covered" title="0 out of 18 forms covered">
+                299&nbsp;&nbsp;&nbsp;&nbsp;(log&#x2F;info&nbsp;&quot;JENKINS_URL&nbsp;is&nbsp;set&nbsp;to&quot;&nbsp;jenkins-url)
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                300&nbsp;&nbsp;&nbsp;&nbsp;(create-workdir&nbsp;workdir)
+                </span><br/>
+<span class="not-covered" title="0 out of 3 forms covered">
+                301&nbsp;&nbsp;&nbsp;&nbsp;(start-action-consumer&nbsp;actions-queue)
+                </span><br/>
+<span class="not-covered" title="0 out of 4 forms covered">
+                302&nbsp;&nbsp;&nbsp;&nbsp;(start-server&nbsp;ring-app&nbsp;port))
+                </span><br/>
+<span class="blank" title="0 out of 0 forms covered">
+                303&nbsp;&nbsp;
+                </span><br/>
+ </body>
+</html>
