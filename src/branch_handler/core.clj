@@ -1,5 +1,5 @@
 ;
-;  (C) Copyright 2016, 2020  Pavel Tisnovsky
+;  (C) Copyright 2016, 2020, 2021  Pavel Tisnovsky
 ;
 ;  All rights reserved. This program and the accompanying materials
 ;  are made available under the terms of the Eclipse Public License v1.0
@@ -27,7 +27,7 @@
 (require '[clj-jenkins-api.jenkins-api :as jenkins-api])
 
 (def verbose
-  "Flag to enable or disable verbosity level."
+  "Flag to enable or disable verbosity level of log files."
   false)
 
 (def port
@@ -35,11 +35,11 @@
   3000)
 
 (def workdir
-  "Working directory."
+  "Working directory used for fetching repositories."
   "/tmp/bare-repositories")
 
 (def job-list-command
-  "Command used to retrieve job list from Jenkins."
+  "Command used to retrieve job list from Jenkins CI."
   "/api/json?tree=jobs[name]")
 
 (def branch-job-prefix
@@ -47,7 +47,7 @@
   "branch-")
 
 (def jenkins-url
-  "URL to Jenkins server."
+  "URL to Jenkins CI server."
   (System/getenv "JENKINS_URL"))
 
 (defn read-request-body
@@ -285,7 +285,7 @@
   (jetty/run-jetty ring-app {:port port}))
 
 (defn create-workdir
-  "Create new working directory."
+  "Create new working directory to be used to fetch repository."
   [workdir]
   (let [directory (new java.io.File workdir)]
     (when-not (.isDirectory directory))
