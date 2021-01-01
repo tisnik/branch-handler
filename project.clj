@@ -1,5 +1,5 @@
 ;
-;  (C) Copyright 2016, 2020  Pavel Tisnovsky
+;  (C) Copyright 2016, 2020, 2021  Pavel Tisnovsky
 ;
 ;  All rights reserved. This program and the accompanying materials
 ;  are made available under the terms of the Eclipse Public License v1.0
@@ -37,7 +37,9 @@
             [lein-cloverage "1.0.7-SNAPSHOT"]
             [lein-kibit "0.1.8"]
             [lein-clean-m2 "0.1.2"]
+            [lein-project-edn "0.3.0"]
             [lein-marginalia "0.9.1"]]
+  :project-edn {:output-file "doc/details.clj"}
   :main ^:skip-aot branch-handler.core
   :ring {:handler branch-handler.core/ring-app}
   :target-path "target/%s"
